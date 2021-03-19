@@ -1,7 +1,9 @@
 # Building Instructions
 
+Execute in the cosmos root dir
 ```
 make build-simd
+export PATH="$HOME/go/bin:$PATH"
 ./simapp/init.sh
 ```
 
