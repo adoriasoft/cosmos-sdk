@@ -6,7 +6,7 @@ Install [Go 1.14+](https://golang.org/dl/)
 
 # Build
 
-Execute in the cosmos root dir
+Execute in the Cosmos root dir
 ```
 make build-simd
 ./simapp/init.sh
