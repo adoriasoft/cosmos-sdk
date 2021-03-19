@@ -1,13 +1,18 @@
-# Building Instructions
+# Configure environment
+
+Install [Go 1.14+](https://golang.org/dl/)
+
+`export PATH="$HOME/go/bin:$PATH"`
+
+# Build
 
 Execute in the cosmos root dir
 ```
 make build-simd
-export PATH="$HOME/go/bin:$PATH"
 ./simapp/init.sh
 ```
 
-# Start the cosmos node
+# Start the Cosmos node
 
 nsd start --with-tendermint=false --transport=grpc
 
