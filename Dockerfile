@@ -1,15 +1,3 @@
-# Simple usage with a mounted data directory:
-# > docker build -t simapp .
-#
-# Server:
-# > docker run -it -p 26657:26657 -p 26656:26656 -v ~/.simapp:/root/.simapp simapp simd init test-chain
-# TODO: need to set validator in genesis so start runs
-# > docker run -it -p 26657:26657 -p 26656:26656 -v ~/.simapp:/root/.simapp simapp simd start
-#
-# Client: (Note the simapp binary always looks at ~/.simapp we can bind to different local storage)
-# > docker run -it -p 26657:26657 -p 26656:26656 -v ~/.simappcli:/root/.simapp simapp simd keys add foo
-# > docker run -it -p 26657:26657 -p 26656:26656 -v ~/.simappcli:/root/.simapp simapp simd keys list
-# TODO: demo connecting rest-server (or is this in server now?)
 FROM golang:alpine AS build-env
 
 # Install minimum necessary dependencies,
@@ -22,23 +10,21 @@ WORKDIR /go/src/github.com/cosmos/cosmos-sdk
 # Add source files
 COPY . .
 
-# build Cosmos SDK, remove packages
-RUN make build-simd && \
-    cp ./build/simd /go/bin
-# make build-sim-linux ??
-
+RUN make build-simd
 
 # Final image
 FROM alpine:edge
+LABEL org.opencontainers.image.source https://github.com/adoriasoft/polkadot_cosmos_integration
 
 # Install ca-certificates
 RUN apk add --update ca-certificates
 WORKDIR /root
 
 # Copy over binaries from the build-env
-COPY --from=build-env /go/bin/simd /usr/bin/simd
+COPY --from=build-env /go/bin/nsd /usr/bin/nsd
+COPY --from=build-env /go/bin/nscli /usr/bin/nscli
+COPY --from=build-env /go/src/github.com/cosmos/cosmos-sdk/simapp/init.sh /usr/bin/init.sh
 
-EXPOSE 26656 26657 1317 9090
+RUN /bin/sh /usr/bin/init.sh
 
-# Run simd by default, omit entrypoint to ease using container with simcli
-CMD ["simd"]
+EXPOSE 26656 26657 26658 1317 9090

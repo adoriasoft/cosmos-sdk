@@ -34,7 +34,7 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "simd",
+		Use:   "nsd",
 		Short: "simulation app",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package types;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/cosmos.proto";
+
+option go_package = "github.com/cosmos/cosmos-sdk/simapp/x/nameservice/types";
+
+message MsgSetName{
+    option (gogoproto.equal) = true;
+
+    string Name = 1;
+    string Value = 2;
+    bytes Owner = 3 [
+        (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress",
+        (gogoproto.moretags) = "yaml:\"owner\""
+    ];
+}
+
+message MsgBuyName{
+    option (gogoproto.equal) = true;
+
+    string Name = 1;
+    repeated cosmos.Coin Bid = 2
+      [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"];
+
+    bytes Buyer = 3 [
+     (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress",
+     (gogoproto.moretags) = "yaml:\"buyer\""
+     ];
+}
+
+message MsgDeleteName{
+    option (gogoproto.equal) = true;
+
+    string Name = 1;
+    bytes Owner = 2 [
+        (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress",
+        (gogoproto.moretags) = "yaml:\"owner\""
+    ];
+}

@@ -88,7 +88,8 @@ build: go.sum
 
 build-simd: go.sum
 	mkdir -p $(BUILDDIR)
-	go build -mod=readonly $(BUILD_FLAGS) -o $(BUILDDIR) ./simapp/simd
+	go install -mod=readonly $(BUILD_FLAGS) ./simapp/cmd/nsd
+	go install -mod=readonly $(BUILD_FLAGS) ./simapp/cmd/nscli
 
 build-simd-linux: go.sum
 	LEDGER_ENABLED=false GOOS=linux GOARCH=amd64 $(MAKE) build-simd

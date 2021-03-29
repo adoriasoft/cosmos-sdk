@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/simapp/x/nameservice"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -78,9 +79,15 @@ import (
 const appName = "SimApp"
 
 var (
-	// DefaultNodeHome default home directories for the application daemon
-	DefaultNodeHome = os.ExpandEnv("$HOME/.simapp")
+	// TODO: rename your cli
 
+	// DefaultCLIHome default home directories for the application CLI
+	DefaultCLIHome = os.ExpandEnv("$HOME/.nscli")
+
+	// TODO: rename your daemon
+
+	// DefaultNodeHome sets the folder where the applcation data and configuration will be stored
+	DefaultNodeHome = os.ExpandEnv("$HOME/.nsd")
 	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration
 	// and genesis verification.
@@ -102,6 +109,8 @@ var (
 		upgrade.AppModuleBasic{},
 		evidence.AppModuleBasic{},
 		transfer.AppModuleBasic{},
+		// TODO: Add your module(s) AppModuleBasic
+		nameservice.AppModule{},
 	)
 
 	// module account permissions
@@ -154,6 +163,8 @@ type SimApp struct {
 	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 	EvidenceKeeper   evidencekeeper.Keeper
 	TransferKeeper   ibctransferkeeper.Keeper
+	// TODO: Add your module(s)
+	nsKeeper nameservice.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -183,11 +194,12 @@ func NewSimApp(
 	bApp.SetAppVersion(version.Version)
 	bApp.GRPCQueryRouter().SetAnyUnpacker(interfaceRegistry)
 
+	// TODO: Add the keys that module requires
 	keys := sdk.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey,
-		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
+		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, nameservice.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -286,6 +298,15 @@ func NewSimApp(
 	evidenceKeeper.SetRouter(evidenceRouter)
 	app.EvidenceKeeper = *evidenceKeeper
 
+	// TODO: Add your module(s) keepers
+	// The NameserviceKeeper is the Keeper from the module for this tutorial
+	// It handles interactions with the namestore
+	app.nsKeeper = nameservice.NewKeeper(
+		app.cdc,
+		keys[nameservice.StoreKey],
+		app.BankKeeper,
+	)
+
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 	app.mm = module.NewManager(
@@ -306,6 +327,8 @@ func NewSimApp(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
+		// TODO: Add your module(s)
+		nameservice.NewAppModule(app.nsKeeper, app.BankKeeper),
 		transferModule,
 	)
 
@@ -328,6 +351,8 @@ func NewSimApp(
 		capabilitytypes.ModuleName, authtypes.ModuleName, distrtypes.ModuleName, stakingtypes.ModuleName, banktypes.ModuleName,
 		slashingtypes.ModuleName, govtypes.ModuleName, minttypes.ModuleName, crisistypes.ModuleName,
 		ibchost.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName, ibctransfertypes.ModuleName,
+		// TODO: Add your module(s)
+		nameservice.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
