@@ -9,6 +9,11 @@ Install [Go 1.14+](https://golang.org/dl/)
 Execute in the Cosmos root dir
 ```
 make build-simd
+```
+
+By default, a Cosmos node uses a local key storage of the OS ([keyring](https://docs.cosmos.network/master/run-node/keyring.html)) connected to the OS account. It requires password from the account for any operations with keys such as node initialization and transaction signing.
+
+```
 ./simapp/init.sh
 ```
 
