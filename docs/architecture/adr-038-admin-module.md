@@ -1,3 +1,4 @@
+
 # ADR 038: Admin module
 
 ## Changelog
@@ -10,29 +11,29 @@ Proposed
 
 ## Abstract
 
-This ADR proposes a new module - admin module, that adds simplified governance workflow with authority-based proposal acceptance. A new role is added - an admin. An admin will be capable of:
-- submitting a proposal, that will automatically be accepted;
+This ADR proposes a new module - admin module, that adds simplified governance workflow with authority-based proposal acceptance. A new role is added - administrator. Admins will be capable of:
+- submitting a proposal that will automatically be accepted;
 - add/remove other admins;
 
 ## Context
 
-The current proposal workflow is based on a concept of validators (token holders) who vote to accept/reject a proposal. The tallying of those votes is based on the voting power (stake-based voting) of voted validators and their delegators. This stake-based multi-step approach provides a high level of security necessary for mainnets.
+The current proposal workflow is based on a concept of validators (token holders) who vote to accept/reject a proposal. The tallying of those votes is based on the voting power (stake-based voting) of validators and their delegators. This stake-based multi-step approach provides a high level of security necessary for mainnets.
 
-However, in testnets there's a strong need for simple testing of new features. The specifics of testnets - often updates with new features that need to be well tested.
+However, the specifics of testnets - often updates with new features that need to be well tested.
 
-Almost every feature and every scenario requires some proposals to be accepted. For example, changing a test account’s balance (thanks to blockchain technology) is not as easy as changing some number in a bank database. Any modification of a blockchain state requires a full proposal workflow with the majority of stakeholders to participate in voting. The situation is even more complicated - in testnet there’s no motivation for users to participate in voting/governance. Full governance process is too long, so it slows down the testing, it slows down the delivery of new features.
+Almost every feature and every scenario require some proposals to be accepted. For example, changing a test account's balance (thanks to blockchain technology) is not as easy as changing some number in a bank database. Any modification of a blockchain state requires a full proposal workflow with the majority of stakeholders to participate in voting. The situation is even more complicated in testnet - there's no motivation for users to participate in voting/governance. The full governance process is too long, so it slows down testing and the delivery of new features.
 
 ## Decision
 
-We propose to create an admin module with simplified governance functionality. Admin module should allow to submit proposals (that are automatically accepted after authorising Proposer ID) and to manage list of admins.
+We propose to create an admin module with simplified governance functionality. Admin module allows submitting proposals that are automatically accepted after verifying the Proposer ID, and managing the list of admins.
 
 Admin module `Msg` and `Query` services will have the following interface:
 ```
 type MsgService interface {
-    // SubmitProposal defines a method to create new proposal given a content.
+    // SubmitProposal defines a method to create new proposal with a given content.
     SubmitProposal(context.Context, *MsgSubmitProposal) (*MsgSenMsgSubmitProposalResponsedResponse, error)
 
-    // AddAdmin defines a method to add new admin
+    // AddAdmin defines a method to add a new admin
     AddAdmin(context.Context, *MsgAddAdmin) error
 
     // DeleteAdmin defines a method to delete an admin
@@ -42,7 +43,7 @@ type MsgService interface {
 type MsgSubmitProposal struct {
     Content        *types.Any
 
-    //Generally unnecessary field that is kept for similarity with the Gov module, can be removed
+    //This field is generally unnecessary and kept only for similarity with the Gov module, can be removed
     InitialDeposit github_com_cosmos_cosmos_sdk_types.Coins
 
     Proposer       string
@@ -75,7 +76,8 @@ type QueryListAdminsResponse struct {
 ### Submitting a Proposal
 
 `MsgService.SubmitProposal` verifies the `MsgSubmitProposal.Proposer` to be in the list of admins. If so, the proposal is successfully submitted and added to the execution queue.
-Admin module will have a separate `KVStore` with Addresses/Pubkeys of accounts that's now admins.
+
+Admin module will have a separate `KVStore` with Addresses of the current admins' accounts.
 
 Admin `KVStore` stores pairs in the following way:
 ```
@@ -84,7 +86,7 @@ Admin `KVStore` stores pairs in the following way:
 
 The Admin module `EndBlock` handler executes all proposals in the queue and calls logic in other modules (as the Governance module does).
 
-Admin module will exist alongside with running Governance module. They will manage two independent proposal queues and each module will handle proposals only from its own queue.
+Admin module will be able to exist alongside with running Governance module. They will manage two independent proposal queues, and each module will handle proposals only from its own queue.
 
 The logic of proposal acceptance in `EndBlocker` handler
 ```
@@ -93,21 +95,24 @@ func EndBlocker {
 }
 ```
 
-### Adding new admin
+### Adding a new admin
 - First admin address should be in `genesis.json`.
 - `MsgService.AddAdmin` handler verifies `MsgAddAdminRequest.Requester` to be in the list of admins. If so, it adds `MsgAddAdminRequest.Admin` to the list of admins.
 
-### Removing admin
+### Removing an admin
 `MsgService.DeleteAdmin` handler verifies `MsgDeleteAdminRequest.Requester` to be in the list of admins. If so, it deletes `MsgDeleteAdminRequest.Admin` from the list of admins.
 
-### Turning admin module off
-There are two ways to delete admins:
-- last admin can delete himself;
-- delete all admins via software upgrade mechanism;
+### Turning the admin module off
+There'll be two ways to switch off the admin module:
+- the last admin deletes themself;
+- the admin module is removed via software upgrade mechanism.
+  
+It will allow using the admin module during the first stages after a network launch and switcing it off later.
 
-### Adding admin to existing testnets
-- adding admins via software upgrade mechanism;
+### Adding the admin module to existing testnets
+Software upgrade mechanism allow adding the admins module to existing testnets via governance.
 
+### Interaction with the admin module
 There'll be new CLI commands for admin module functionality:
 ```sh
 # submit proposal
@@ -121,9 +126,9 @@ simd query admin list
 ```
 
 We also propose to create a simple web interface that demonstrates the work of the admin module. It will include the following features:
-- review the current parameters of existing modules;
+- review the current parameters of some existing modules;
 - connect a wallet;
-- submit proposal;
+- submit a proposal;
 - modify the list of admins.
 
 ### Positive
@@ -133,5 +138,5 @@ We also propose to create a simple web interface that demonstrates the work of t
 `None`
 
 ### Neutral
-- Needs minor changes to simapp
-- Need changes to genesis.json (to add first admins)
+- Needs minor changes to simapp.
+- Need changes to genesis.json (to add first admins).
