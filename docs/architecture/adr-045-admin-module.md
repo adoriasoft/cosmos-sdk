@@ -1,9 +1,9 @@
 
-# ADR 038: Admin module
+# ADR 045: Admin module
 
 ## Changelog
 
-- 2021/07/14: Initial draft
+- 2021/07/16: Initial draft
 
 ## Status
 
