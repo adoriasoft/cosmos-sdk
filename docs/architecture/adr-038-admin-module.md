@@ -132,7 +132,7 @@ We also propose to create a simple web interface that demonstrates the work of t
 - modify the list of admins.
 
 ### Positive
-- Simplifies replaying scenarios -> accelerates development and testing
+- Simplifies updating and applying new changes for the modules -> accelerates development and testing
 
 ### Negative
 `None`
